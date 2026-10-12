@@ -1,0 +1,16 @@
+[Unit]
+Description=Custom PostgreSQL service for {{ postgres__data_dir }}
+After=network.target
+
+[Service]
+Type=notify
+User=postgres
+Group=postgres
+ExecStart={{ postgres__bin_dir }}/postgres -D {{ postgres__data_dir }}
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGINT
+TimeoutSec=120
+
+[Install]
+WantedBy=multi-user.target

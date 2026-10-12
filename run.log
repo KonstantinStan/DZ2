@@ -1,0 +1,152 @@
+
+ настройка с нуля
+
+PLAY [Deploy PostgreSQL] *******************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [vm1]
+
+TASK [postgres : 1. Install PostgreSQL and Python] *****************************
+ok: [vm1]
+
+TASK [postgres : 2. Disable default Ubuntu PostgreSQL service] *****************
+ok: [vm1]
+
+TASK [postgres : 3. Create parent data directory] ******************************
+ok: [vm1]
+
+TASK [postgres : 4. Create postgres cluster directory] *************************
+changed: [vm1]
+
+TASK [postgres : 5. Initialize PostgreSQL cluster in custom data dir] **********
+changed: [vm1]
+
+TASK [postgres : 6. Deploy systemd unit for custom postgres service] ***********
+changed: [vm1]
+
+TASK [postgres : 7. Flush handlers to reload systemd before starting service] ***
+
+RUNNING HANDLER [postgres : Systemd daemon reload] *****************************
+ok: [vm1]
+
+RUNNING HANDLER [postgres : Restart postgresql custom] *************************
+changed: [vm1]
+
+TASK [postgres : 8. Configure postgresql.conf] *********************************
+changed: [vm1]
+
+TASK [postgres : 9. Configure pg_hba.conf] *************************************
+changed: [vm1]
+
+TASK [postgres : 10. Start and enable custom postgresql service] ***************
+changed: [vm1]
+
+TASK [postgres : 11. Ensure custom databases exist] ****************************
+skipping: [vm1]
+
+TASK [postgres : 12. Ensure custom users exist] ********************************
+skipping: [vm1]
+
+TASK [postgres : 13. Verify PostgreSQL connection with SELECT 1] ***************
+ok: [vm1]
+
+TASK [postgres : 14. Assert SELECT 1 check succeeded] **************************
+ok: [vm1] => {
+    "changed": false,
+    "msg": "PostgreSQL is alive and responding to queries!"
+}
+
+RUNNING HANDLER [postgres : Restart postgresql custom] *************************
+changed: [vm1]
+
+PLAY RECAP *********************************************************************
+vm1                        : ok=15   changed=8    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+
+
+ каталог данных=
+   data_directory    
+---------------------
+ /data/postgres/data
+(1 row)
+
+● postgresql-custom.service - Custom PostgreSQL service for /data/postgres/data
+     Loaded: loaded (/etc/systemd/system/postgresql-custom.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-10-12 23:20:15 MSK; 346ms ago
+ Invocation: 853e0fda399343c980c99ed3c37ca497
+   Main PID: 84722 (postgres)
+      Tasks: 9 (limit: 19150)
+     Memory: 23.1M (peak: 24.8M)
+        CPU: 61ms
+     CGroup: /system.slice/postgresql-custom.service
+             ├─84722 /usr/lib/postgresql/18/bin/postgres -D /data/postgres/data
+             ├─84723 "postgres: io worker 0"
+             ├─84724 "postgres: io worker 1"
+             ├─84725 "postgres: io worker 2"
+             ├─84726 "postgres: checkpointer "
+             ├─84727 "postgres: background writer "
+             ├─84729 "postgres: walwriter "
+             ├─84730 "postgres: autovacuum launcher "
+             └─84731 "postgres: logical replication launcher "
+
+Oct 12 23:20:15 DESKTOP-Q9NCT5N systemd[1]: Starting postgresql-custom.service - Custom PostgreSQL service for /data/postgres/data...
+Oct 12 23:20:15 DESKTOP-Q9NCT5N postgres[84722]: 2026-10-12 20:20:15.955 UTC [84722] LOG:  starting PostgreSQL 18.6 (Ubuntu 18.6-0ubuntu0.26.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, 64-bit
+Oct 12 23:20:15 DESKTOP-Q9NCT5N postgres[84722]: 2026-10-12 20:20:15.956 UTC [84722] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+Oct 12 23:20:15 DESKTOP-Q9NCT5N postgres[84722]: 2026-10-12 20:20:15.959 UTC [84722] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+Oct 12 23:20:15 DESKTOP-Q9NCT5N postgres[84728]: 2026-10-12 20:20:15.969 UTC [84728] LOG:  database system was shut down at 2026-10-12 20:20:15 UTC
+Oct 12 23:20:15 DESKTOP-Q9NCT5N postgres[84722]: 2026-10-12 20:20:15.976 UTC [84722] LOG:  database system is ready to accept connections
+Oct 12 23:20:15 DESKTOP-Q9NCT5N systemd[1]: Started postgresql-custom.service - Custom PostgreSQL service for /data/postgres/data.
+
+ проверка changed=0
+
+PLAY [Deploy PostgreSQL] *******************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [vm1]
+
+TASK [postgres : 1. Install PostgreSQL and Python] *****************************
+ok: [vm1]
+
+TASK [postgres : 2. Disable default Ubuntu PostgreSQL service] *****************
+ok: [vm1]
+
+TASK [postgres : 3. Create parent data directory] ******************************
+ok: [vm1]
+
+TASK [postgres : 4. Create postgres cluster directory] *************************
+ok: [vm1]
+
+TASK [postgres : 5. Initialize PostgreSQL cluster in custom data dir] **********
+ok: [vm1]
+
+TASK [postgres : 6. Deploy systemd unit for custom postgres service] ***********
+ok: [vm1]
+
+TASK [postgres : 7. Flush handlers to reload systemd before starting service] ***
+
+TASK [postgres : 8. Configure postgresql.conf] *********************************
+ok: [vm1]
+
+TASK [postgres : 9. Configure pg_hba.conf] *************************************
+ok: [vm1]
+
+TASK [postgres : 10. Start and enable custom postgresql service] ***************
+ok: [vm1]
+
+TASK [postgres : 11. Ensure custom databases exist] ****************************
+skipping: [vm1]
+
+TASK [postgres : 12. Ensure custom users exist] ********************************
+skipping: [vm1]
+
+TASK [postgres : 13. Verify PostgreSQL connection with SELECT 1] ***************
+ok: [vm1]
+
+TASK [postgres : 14. Assert SELECT 1 check succeeded] **************************
+ok: [vm1] => {
+    "changed": false,
+    "msg": "PostgreSQL is alive and responding to queries!"
+}
+
+PLAY RECAP *********************************************************************
+vm1                        : ok=12   changed=0    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+

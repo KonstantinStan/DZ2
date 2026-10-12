@@ -1,0 +1,111 @@
+
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for roles/postgres
+
+- name: 1. Install PostgreSQL and Python
+  ansible.builtin.apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+    state: present
+
+- name: 2. Disable default Ubuntu PostgreSQL service
+  ansible.builtin.systemd:
+    name: postgresql
+    state: stopped
+    enabled: false
+
+- name: 3. Create parent data directory
+  ansible.builtin.file:
+    path: /data
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: 4. Create postgres cluster directory
+  ansible.builtin.file:
+    path: /data/postgres
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: "0700"
+
+- name: 5. Initialize PostgreSQL cluster in custom data dir
+  ansible.builtin.command:
+    cmd: "{{ postgres__bin_dir }}/initdb -D {{ postgres__data_dir }} --auth-local=peer --auth-host=scram-sha-256"
+    creates: "{{ postgres__data_dir }}/PG_VERSION"
+  become: true
+  become_user: postgres
+
+- name: 6. Deploy systemd unit for custom postgres service
+  ansible.builtin.template:
+    src: postgresql-custom.service.j2
+    dest: "/etc/systemd/system/{{ postgres__service_name }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Systemd daemon reload
+    - Restart postgresql custom
+
+- name: 7. Flush handlers to reload systemd before starting service
+  ansible.builtin.meta: flush_handlers
+
+- name: 8. Configure postgresql.conf
+  ansible.builtin.template:
+    src: postgresql.conf.j2
+    dest: "{{ postgres__data_dir }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: "0600"
+  notify: Restart postgresql custom
+
+- name: 9. Configure pg_hba.conf
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: "{{ postgres__data_dir }}/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: "0600"
+  notify: Restart postgresql custom
+
+- name: 10. Start and enable custom postgresql service
+  ansible.builtin.systemd:
+    name: "{{ postgres__service_name }}"
+    state: started
+    enabled: true
+
+- name: 11. Ensure custom databases exist
+  community.postgresql.postgresql_db:
+    name: "{{ item }}"
+    state: present
+  become: true
+  become_user: postgres
+  loop: "{{ postgres__databases }}"
+
+- name: 12. Ensure custom users exist
+  community.postgresql.postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password | default(omit) }}"
+    state: present
+  become: true
+  become_user: postgres
+  no_log: true
+  loop: "{{ postgres__users }}"
+
+- name: 13. Verify PostgreSQL connection with SELECT 1
+  community.postgresql.postgresql_query:
+    query: "SELECT 1;"
+  become: true
+  become_user: postgres
+  register: postgres__select_check
+
+- name: 14. Assert SELECT 1 check succeeded
+  ansible.builtin.assert:
+    that:
+      - postgres__select_check.query_result[0]['?column?'] == 1
+    fail_msg: "PostgreSQL SELECT 1 check failed"
+    success_msg: "PostgreSQL is alive and responding to queries!"

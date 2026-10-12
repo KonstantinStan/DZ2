@@ -1,0 +1,11 @@
+---
+postgres__version: "18"
+postgres__bin_dir: "/usr/lib/postgresql/{{ postgres__version }}/bin"
+postgres__data_dir: "/data/postgres/data"
+postgres__service_name: "postgresql-custom"
+
+postgres__port: 5432
+postgres__listen_addresses: "localhost"
+
+postgres__users: []
+postgres__databases: []
